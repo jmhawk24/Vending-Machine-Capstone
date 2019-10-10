@@ -76,5 +76,8 @@ public class VendingMachineCLI {
 	
 	public static void endMethodProcessing() { // static attribute used as method is not associated with specific object instance
 		// Any processing that needs to be done before method ends
+		
+		
+		
 	}
 }
