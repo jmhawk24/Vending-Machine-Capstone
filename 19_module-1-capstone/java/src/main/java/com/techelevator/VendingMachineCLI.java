@@ -1,6 +1,8 @@
 package com.techelevator;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +48,10 @@ public class VendingMachineCLI {
 	*  VendingMachineCLI main processing loop
 	*  
 	*  Display the main menu and process option chosen
-	 * @throws FileNotFoundException 
+	 * @throws IOException 
 	***************************************************************************************************************************/
 
-	public void run() throws FileNotFoundException {
+	public void run() throws IOException {
 		
 		File inputFile = new File("vendingmachine.csv");
 		Scanner inventoryReader = new Scanner(inputFile);
@@ -64,7 +66,13 @@ public class VendingMachineCLI {
 		noiseMap.put("Gum", "Chew Chew, Yum!");
 		VendingMachine theMachine = new VendingMachine();
 		
+		File logFile = new File("VendingMachineLog.txt");
+		logFile.createNewFile();
+
+		
+		
 		while (inventoryReader.hasNextLine()) {
+			
 			String[] nextItem = inventoryReader.nextLine().split("\\|"); // slot, name, price, type
 			Product currentProduct = new Product(nextItem[1], Double.parseDouble(nextItem[2]), nextItem[3]);
 			inventoryList.add(currentProduct);
@@ -76,6 +84,8 @@ public class VendingMachineCLI {
 		
 		while(shouldProcess) {                // Loop until user indicates they want to exit
 			
+
+			
 			String choice = (String)vendingMenu.getChoiceFromOptions(MAIN_MENU_OPTIONS);  // Display menu and get choice
 			
 			switch(choice) {                  // Process based on user menu choice
@@ -85,6 +95,7 @@ public class VendingMachineCLI {
 					break;                    // Exit switch statement
 			
 				case MAIN_MENU_OPTION_PURCHASE:
+					PrintWriter logWriter = new PrintWriter(logFile);
 					Purchase newPurchase = new Purchase();
 					boolean inPurchase = true;
 					while (inPurchase) {
@@ -92,19 +103,20 @@ public class VendingMachineCLI {
 					
 					switch(secondChoice) {
 					case PURCHASE_MENU_OPTION_FEED_MONEY:
-						newPurchase.feedMoney();
+						newPurchase.feedMoney(logWriter);
 						//this case will put money into machine, list amount, send to log
 						break;
 						
 					case PURCHASE_MENU_OPTION_SELECT_PRODUCT:
 						// this is where they will purchase, money reduces, send info to log
-						newPurchase.makePurchase(slotProductMap, noiseMap);
+						newPurchase.makePurchase(logWriter, slotProductMap, noiseMap);
 						break;
 						
 					case PURCHASE_MENU_OPTION_FINISH_TRANSACTION:
 						//remaining money returns to the customer, send to log
-						newPurchase.returnMoney();
+						newPurchase.returnMoney(logWriter);
 						inPurchase = false;
+						logWriter.close();
 						break;
 					}
 				}// Exit switch statement
@@ -113,7 +125,8 @@ public class VendingMachineCLI {
 			
 				case MAIN_MENU_OPTION_EXIT:
 					endMethodProcessing();    // Invoke method to perform end of method processing
-					shouldProcess = false;    // Set variable to end loop
+					shouldProcess = false; 
+												// Set variable to end loop
 					break;                    // Exit switch statement
 			}	
 		}

@@ -20,7 +20,7 @@ public class Product {
 		this.name = name;
 		this.price = price;
 		this.type = type;
-		this.inventory = 0;
+		this.inventory = 5;
 	}
 	
 	//Getters and Setters
