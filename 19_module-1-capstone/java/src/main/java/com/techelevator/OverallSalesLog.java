@@ -2,7 +2,7 @@ package com.techelevator;
 
 public class OverallSalesLog {
 
-	private static double runningTotal;
+	public static double runningTotal;
 	
 	public OverallSalesLog() {
 		runningTotal = 0;

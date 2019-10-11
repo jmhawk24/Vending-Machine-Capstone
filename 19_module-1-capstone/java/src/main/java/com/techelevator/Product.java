@@ -14,9 +14,9 @@ public class Product {
 
 	//Constructor
 	
-	public Product(String name, double price, String type) {
+	public Product(String slot, String name, double price, String type) {
 		super();
-//		this.slot = slot;
+		this.slot = slot;
 		this.name = name;
 		this.price = price;
 		this.type = type;
@@ -44,6 +44,7 @@ public class Product {
 		this.inventory = inventory;
 	}
 
+	
 	//Methods
 	public void printProductList (List<Product> inventoryList) {
 		for(Product entry : inventoryList) {

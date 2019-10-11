@@ -23,9 +23,11 @@ public class VendingMachineCLI {
 	private static final String MAIN_MENU_OPTION_DISPLAY_ITEMS = "Display Vending Machine Items";
 	private static final String MAIN_MENU_OPTION_PURCHASE      = "Purchase";
 	private static final String MAIN_MENU_OPTION_EXIT          = "Exit";
+	private static final String MAIN_MENU_OPTION_SALES_LOG	   = "Sales Report";
 	private static final String[] MAIN_MENU_OPTIONS = { MAIN_MENU_OPTION_DISPLAY_ITEMS,
 													    MAIN_MENU_OPTION_PURCHASE,
-													    MAIN_MENU_OPTION_EXIT
+													    MAIN_MENU_OPTION_EXIT,
+													    MAIN_MENU_OPTION_SALES_LOG
 													    };
 	
 	
@@ -74,7 +76,7 @@ public class VendingMachineCLI {
 		while (inventoryReader.hasNextLine()) {
 			
 			String[] nextItem = inventoryReader.nextLine().split("\\|"); // slot, name, price, type
-			Product currentProduct = new Product(nextItem[1], Double.parseDouble(nextItem[2]), nextItem[3]);
+			Product currentProduct = new Product(nextItem[0], nextItem[1], Double.parseDouble(nextItem[2]), nextItem[3]);
 			inventoryList.add(currentProduct);
 			slotProductMap.put(nextItem[0], currentProduct); // slot and price
 		}
@@ -107,9 +109,11 @@ public class VendingMachineCLI {
 						//this case will put money into machine, list amount, send to log
 						break;
 						
-					case PURCHASE_MENU_OPTION_SELECT_PRODUCT:
+					case PURCHASE_MENU_OPTION_SELECT_PRODUCT: 
+						displayItems(inventoryList);
 						// this is where they will purchase, money reduces, send info to log
 						newPurchase.makePurchase(logWriter, slotProductMap, noiseMap);
+						
 						break;
 						
 					case PURCHASE_MENU_OPTION_FINISH_TRANSACTION:
@@ -127,7 +131,15 @@ public class VendingMachineCLI {
 					endMethodProcessing();    // Invoke method to perform end of method processing
 					shouldProcess = false; 
 												// Set variable to end loop
-					break;                    // Exit switch statement
+					break; 
+					
+				case MAIN_MENU_OPTION_SALES_LOG:
+					   // Invoke method to perform end of method processing
+					Purchase.salesReport(slotProductMap, OverallSalesLog.getRunningTotal());
+					System.out.print("Your sales report has been created.");
+					
+										 // Set variable to end loop
+					break;               // Exit switch statement
 			}	
 		}
 		return;                               // End method and return to caller
