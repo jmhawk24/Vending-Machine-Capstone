@@ -21,108 +21,96 @@ public class Purchase extends VendingMachine{
 	public Purchase() {
 		super();
 	}
-	
-	
-	
-	private static void writeToLog(PrintWriter logWriter, double dollarAmount, double currentFunds) {
-		DateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss aa");
-		Date dateInstance = new Date();
-		logWriter.println(dateInstance + " FEED MONEY: $" + dollarAmount + " $" + currentFunds);
-	}
-	
-	
-	private static void writeToLog(PrintWriter logWriter, String itemName, String slot, double dollarAmount, double currentFunds) {
-		DateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss aa");
-		Date dateInstance = new Date();
-		logWriter.println(dateInstance + itemName + slot + " $" + dollarAmount + " $" + currentFunds);
-	}
-	
-	public static void salesReport(Map<String, Product> slotPriceMap, double runningTotal) throws IOException {
-		DateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss aa");
-		Date dateInstance = new Date();
-		File salesLog = new File("SalesReport " + dateInstance);
+
+	public static void salesReport(Map<String, Product> slotProductMap, double runningTotal) throws IOException {
+		File salesLog = new File("SalesReport " + getDate().toString());
 		salesLog.createNewFile();
 		PrintWriter salesReportWriter = new PrintWriter(salesLog);
 		
 		Set<String> productSets = new TreeSet<String>();
-		productSets = (slotPriceMap.keySet());
+		productSets = (slotProductMap.keySet());
 		for (String entry : productSets) {
 			salesReportWriter.println(
-			slotPriceMap.get(entry).getName() + " | " + 
-			(5 - slotPriceMap.get(entry).getInventory()));
+			slotProductMap.get(entry).getName() + " | " + 
+			(5 - slotProductMap.get(entry).getInventory()));
 		}
-		salesReportWriter.println("Total Sales: $" + runningTotal);
+		salesReportWriter.printf("Total Sales: $%.2f", runningTotal);
 		salesReportWriter.close();
-//		getRunningTotal();
-//		int inventoryReport = slotPriceMap.get);
 	}
 	
-	public void feedMoney(PrintWriter logWriter) {
+	public void feedMoney() {
 		Scanner feedMoney = new Scanner(System.in);
 		System.out.print("Please insert the amount ($1, $2, $5, $10 only): ");
 		String dollarAmountString = feedMoney.nextLine();
 		double dollarAmount = Double.parseDouble(dollarAmountString);
 		if (dollarAmount == 1 || dollarAmount == 2 || dollarAmount == 5 || dollarAmount == 10) {
 			currentFundsAvailable += dollarAmount;
-			writeToLog(logWriter, dollarAmount, currentFundsAvailable);
-			
-			logWriter.println("FEED MONEY: $" + dollarAmount + " $" + currentFundsAvailable);
+			String whatToWrite = (getDate().toString() + " FEED MONEY: $" + Double.toString(dollarAmount) + " $" + Double.toString(currentFundsAvailable));
+			OverallSalesLog.writeToLog(whatToWrite);
 		}
 		else {
 			System.out.println("This is not a valid dollar amount.");
 		}
 	}
-	Map<String, Double> slotPrice = new TreeMap<String, Double>();
-	public void initializeSlotPriceMap(List<Product> inventory) {
-		for(Product productEntries : inventory) {
-			slotPrice.put(productEntries.getSlot(), productEntries.getPrice());
-			
-		}
-	}
 	
-	public void makePurchase(PrintWriter logWriter, Map<String, Product> slotPriceMap, Map<String, String> noiseMap) {	 // static attribute used as method is not associated with specific object instance
+	public void makePurchase( Map<String, Product> slotProductMap, Map<String, String> noiseMap) {	 // static attribute used as method is not associated with specific object instance
 		Scanner choiceInput = new Scanner(System.in);
 		System.out.println("Please enter the two-digit code for the item you want: ");
 		String theirChoice = choiceInput.nextLine();
-		if (slotPriceMap.containsKey(theirChoice)) {
-			double itemPrice = slotPriceMap.get(theirChoice).getPrice();
-			double fundsBeforeSubtract = currentFundsAvailable;
-			currentFundsAvailable -= itemPrice;
+		if (slotProductMap.containsKey(theirChoice)) {
+			if (slotProductMap.get(theirChoice).getInventory() > 0) {
+				double itemPrice = slotProductMap.get(theirChoice).getPrice();
+				
+					if (currentFundsAvailable >= itemPrice) {
+						
+						double fundsBeforeSubtract = currentFundsAvailable;
+					currentFundsAvailable -= itemPrice;
+					
+					slotProductMap.get(theirChoice).setInventory(slotProductMap.get(theirChoice).getInventory() - 1);
+					
+					OverallSalesLog.writeToLog(getDate().toString() + slotProductMap.get(theirChoice).getName() + " " +  slotProductMap.get(theirChoice).getSlot() 
+							+ " $" + Double.toString(fundsBeforeSubtract) + " $" + Double.toString(currentFundsAvailable));
+					OverallSalesLog.addToTotal(itemPrice);
+					// method that sends this transaction to the reports and final counter
+					System.out.println(getNoise(theirChoice, noiseMap));
+					System.out.printf("\n You just bought " + slotProductMap.get(theirChoice).getName() 
+								+ "! It cost $ %.2f.\n ", slotProductMap.get(theirChoice).getPrice()); 
+					}
+					else {
+						System.out.println("Sorry, you have insufficient funds.");
+					}
+				}
 			
-			slotPriceMap.get(theirChoice).setInventory(slotPriceMap.get(theirChoice).getInventory() - 1);
+			else {
+				System.out.println("Sorry, your choice is SOLD OUT.");
+			}
 			
-	
-			
-			writeToLog(logWriter, slotPriceMap.get(theirChoice).getName(), theirChoice, 
-					fundsBeforeSubtract, currentFundsAvailable);
-			OverallSalesLog.addToTotal(itemPrice);
-			// method that sends this transaction to the reports and final counter
-			if (theirChoice.contains("A")) {
-				System.out.println(noiseMap.get("Chips"));
-				System.out.printf("\n You just bought " + slotPriceMap.get(theirChoice).getName() 
-						+ "! It cost $ %.2f.\n ", slotPriceMap.get(theirChoice).getPrice());
-
-			}
-			if (theirChoice.toUpperCase().contains("B")) {
-				System.out.println(noiseMap.get("Candy"));
-				System.out.printf("You just bought " + slotPriceMap.get(theirChoice).getName() 
-						+ "! It cost $ %.2f.\n", slotPriceMap.get(theirChoice).getPrice());
-			}
-			if (theirChoice.toUpperCase().contains("C")) {
-				System.out.println(noiseMap.get("Drink"));
-				System.out.printf("\n You just bought " + slotPriceMap.get(theirChoice).getName() 
-						+ "! It cost $ %.2f.\n ", slotPriceMap.get(theirChoice).getPrice());
-			}
-			if (theirChoice.toUpperCase().contains("D")) {
-				System.out.println(noiseMap.get("Gum"));
-				System.out.printf("\n You just bought " + slotPriceMap.get(theirChoice).getName() 
-						+ "! It cost $ %.2f.\n ", slotPriceMap.get(theirChoice).getPrice());
-			}
-		}System.out.printf("Your remaining balance is $%.2f.", currentFundsAvailable);
+			System.out.printf("Your remaining balance is $%.2f.", currentFundsAvailable);
+		}
+		else {
+			System.out.println("You did not enter a valid item code. Please try again.");
+		}
 	}
 	
-	//REFACTOR this to spit out specific coins!
-	public void returnMoney(PrintWriter logWriter) {		// this method is to finalize sale and return money
+	private String getNoise(String theirChoice, Map<String, String> noiseMap) {
+		if (theirChoice.toUpperCase().contains("A")) {
+			return noiseMap.get("Chips");
+		}
+		if (theirChoice.toUpperCase().contains("B")) {
+			return noiseMap.get("Candy");
+		}
+		if (theirChoice.toUpperCase().contains("C")) {
+			return noiseMap.get("Drink");
+		}
+		if (theirChoice.toUpperCase().contains("D")) {
+			return noiseMap.get("Gum");
+		}
+		else {
+			return "";
+		}
+	}
+	
+	public void returnMoney() {		// this method is to finalize sale and return money
 		
 		System.out.printf("\n Your change is: $ %.2f. \n", currentFundsAvailable);
 		int change = (int)(Math.ceil(currentFundsAvailable*100));
@@ -135,8 +123,16 @@ public class Purchase extends VendingMachine{
 				+ nickels + " nickels.\n");
 		double fundsBeforeDispensing = currentFundsAvailable;
 		currentFundsAvailable = 0;
-		writeToLog(logWriter, fundsBeforeDispensing, currentFundsAvailable);
+		OverallSalesLog.writeToLog(getDate() + " DISPENSE CHANGE: $" + fundsBeforeDispensing + " $" + currentFundsAvailable);
 	}
+	
+	
+	private static Date getDate() {
+		DateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss aa");
+		Date dateInstance = new Date();
+		return dateInstance;
+	}
+
 
 	
 	

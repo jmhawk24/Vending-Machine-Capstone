@@ -68,8 +68,9 @@ public class VendingMachineCLI {
 		noiseMap.put("Gum", "Chew Chew, Yum!");
 		VendingMachine theMachine = new VendingMachine();
 		
-		File logFile = new File("VendingMachineLog.txt");
-		logFile.createNewFile();
+//		final File logFile = new File("VendingMachineLog.txt");
+//		logFile.createNewFile();
+		OverallSalesLog vendingLog = new OverallSalesLog();
 
 		
 		
@@ -97,7 +98,6 @@ public class VendingMachineCLI {
 					break;                    // Exit switch statement
 			
 				case MAIN_MENU_OPTION_PURCHASE:
-					PrintWriter logWriter = new PrintWriter(logFile);
 					Purchase newPurchase = new Purchase();
 					boolean inPurchase = true;
 					while (inPurchase) {
@@ -105,22 +105,22 @@ public class VendingMachineCLI {
 					
 					switch(secondChoice) {
 					case PURCHASE_MENU_OPTION_FEED_MONEY:
-						newPurchase.feedMoney(logWriter);
+						
+						newPurchase.feedMoney();
 						//this case will put money into machine, list amount, send to log
 						break;
 						
 					case PURCHASE_MENU_OPTION_SELECT_PRODUCT: 
 						displayItems(inventoryList);
 						// this is where they will purchase, money reduces, send info to log
-						newPurchase.makePurchase(logWriter, slotProductMap, noiseMap);
+						newPurchase.makePurchase( slotProductMap, noiseMap);
 						
 						break;
 						
 					case PURCHASE_MENU_OPTION_FINISH_TRANSACTION:
 						//remaining money returns to the customer, send to log
-						newPurchase.returnMoney(logWriter);
+						newPurchase.returnMoney();
 						inPurchase = false;
-						logWriter.close();
 						break;
 					}
 				}// Exit switch statement
@@ -129,6 +129,7 @@ public class VendingMachineCLI {
 			
 				case MAIN_MENU_OPTION_EXIT:
 					endMethodProcessing();    // Invoke method to perform end of method processing
+					OverallSalesLog.closePrintWriter();
 					shouldProcess = false; 
 												// Set variable to end loop
 					break; 
